@@ -46,12 +46,20 @@ get_input:
     cmp al, 0x73
     je match_s
 
+    cmp al, 0x72
+    je match_r
+
     jmp get_input
 
 match_s:
     lea si, [message]
     call print_string
     jmp get_input
+
+match_r:
+    mov ax, 0x00
+    int 0x19
+
 
 done_input:
     jmp $
