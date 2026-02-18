@@ -51,7 +51,25 @@ print_link:
     jne print_link
 
 mov ah, 0x0e
-mov al 0x0D
+mov al, 0x0D
+int 0x10
+
+mov ah, 0x0e
+mov al, 0x0A
+int 0x10
+
+mov si, 0
+
+print_prompt:
+    mov ah, 0x0e
+    mov al, [prompt + si]
+    int 0x10
+    add si, 1
+    cmp byte [prompt + si], 0
+    jne print_prompt
+
+mov ah, 0x0e
+mov al, 0x0D
 int 0x10
 
 mov ah, 0x0e
@@ -61,36 +79,50 @@ int 0x10
 mov si, 0
 
 
-jmp $
 
-; Accept keyboard input
-
-mov si, 0
-mov di, input_buffer
-
-
-print_prompt:
-    mov ah, 0x0e
-    mov al, '>'
-    int 0x10
-    mov ah, 0x0e
-    mov al, ' '
-    int 0x10
-
-read_input:
-    mov ah, 0x0e
+get_input:
+    
+    mov ah, 0x00
     int 0x16
+
     cmp al, 0x0D
     je done_input
-    mov [di], al
-    inc di
-    jmp read_input
 
 
+    cmp al, 0x73
+    je match_s
+
+    jmp get_input
+
+match_s:
+
+    cmp byte [message_printed], 1
+    je get_input
+
+    mov si, 0
+    mov ah, 0x0e
+    mov al, '*'
+    int 0x10
+    mov al, 'S'
+    int 0x10
+    mov al, 'o'
+    int 0x10
+    mov al, 'c'
+    int 0x10
+    mov al, 'k'
+    int 0x10
+    mov al, 'O'
+    int 0x10
+    mov al, 'S'
+    int 0x10
+
+    mov byte [message_printed], 1
+
+    jmp get_input
 
 
-
-
+done_input:
+    jmp $
 
 
 
@@ -102,7 +134,12 @@ version:
     db "Version 1.00.0000 Sock OS", 0
 link:
     db "https://github.com/brobinson1000/Sock-OS.git", 0
+prompt:
+    db "Boot Menu", 0 
+    input_buffer db 32 ; stores space for 32 characters
+    input_index db 0; track where use types
 
+message_printed db 0
 
 times 510 - ($ - $$) db 0
 dw 0xAA55
