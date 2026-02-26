@@ -63,7 +63,8 @@ jmp get_input
 match_boot:
 lea si, [normBootMessage]
 call print_string
-jmp get_input
+call load_kernel
+jmp 0x1000:0x0000
 
 match_advanced:
 lea si, [advBootMessage]
@@ -78,6 +79,18 @@ int 0x19
 
 done_input:
 jmp $
+
+load_kernel:
+; Load 1 sector (512 bytes) from disk to memory at 0x10000
+mov ah, 0x02            ; BIOS read sector function
+mov al, 1               ; Number of sectors to read (1 sector)
+mov ch, 0               ; Cylinder 0
+mov cl, 2               ; Sector 2 (skip the bootloader)
+mov dh, 0               ; Head 0
+mov dl, 0x80            ; Drive 0 (first hard drive)
+mov bx, 0x1000          ; Load address (0x10000, but in segment)
+int 0x13                ; Call BIOS interrupt to read sector
+ret
 
 print_string:
 push si
@@ -109,9 +122,9 @@ os db "Sock OS", 0
 version db "Version 1.00.0000 Sock OS", 0
 link db "https://github.com/brobinson1000/Sock-OS.git", 0
 prompt db "Boot Menu", 0
-opt1 db "SockOS*", 0
-opt2 db "Advanced options for SockOS", 0
-opt3 db "Reboot System", 0
+opt1 db "[ 1 ] SockOS*", 0
+opt2 db "[ 2 ] Advanced options for SockOS", 0
+opt3 db "[ 3 ] Reboot System", 0
 normBootMessage db "Normal Boot Starting in ", 0
 advBootMessage db "Advanced Boot Options ", 0
 
