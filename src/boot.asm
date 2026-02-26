@@ -11,26 +11,75 @@ KERNEL_START_ADDR equ 0x100000
 
 
 start:
-    cli           ; Clear interrupts, disabling all maskable interrupts
-    mov ax, 0x00  ; Load immediate value 0x00 into register AX
-    mov ds, ax    ; Set data segment (DS) to 0x00
-    mov es, ax    ; Set extra segment (ES) to 0x00
-    mov ss, ax    ; Set stack segment (SS) to 0x00
-    mov sp, 0x7c00; Set stack pointer (SP) to 0x7c00, top of the bootloader segment
-    sti           ; Enable interrupts, allowing them to occur again
-    
+    cli
+    mov ax, 0x00
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0x7c00
+    sti
 
-;Load kernel
-mov bx, KERNEL_LOAD_SEG
-mov dh, 0x00
-mov dl, 0x80
-mov cl, 0x02
-mov ch, 0x00
-mov ah, 0x02
-mov al, 8
-int 0x13
+    ; Clear screen
+    mov ah, 0x00
+    mov al, 0x03
+    int 0x10
 
-jc disk_read_error
+    ; Print menu
+    mov si, msg_menu
+    call print_string
+
+wait_key:
+    mov ah, 0x00
+    int 0x16          ; BIOS keyboard read - waits for keypress
+
+    cmp al, '1'
+    je load_kernel
+
+    ; Any other key
+    mov si, msg_invalid
+    call print_string
+    jmp wait_key
+
+load_kernel:
+    mov si, msg_loading
+    call print_string
+
+    ; Load kernel from disk
+    mov ax, KERNEL_LOAD_SEG
+    mov es, ax
+    mov bx, 0x0000
+    mov dh, 0x00
+    mov dl, 0x80
+    mov cl, 0x02
+    mov ch, 0x00
+    mov ah, 0x02
+    mov al, 8
+    int 0x13
+
+    jc disk_read_error
+
+    jmp load_PM
+
+
+; print null-terminated string pointed to by SI
+print_string:
+    pusha
+.loop:
+    lodsb
+    cmp al, 0
+    je .done
+    mov ah, 0x0E
+    int 0x10
+    jmp .loop
+.done:
+    popa
+    ret
+
+
+disk_read_error:
+    mov si, msg_disk_err
+    call print_string
+    hlt
 
 
 load_PM:
@@ -42,36 +91,44 @@ load_PM:
     jmp CODE_OFFSET:PModeMain
 
 
-disk_read_error:
-    hlt
+msg_menu     db 13, 10
+             db "=============================", 13, 10
+             db "     Welcome to SockOS       ", 13, 10
+             db "=============================", 13, 10
+             db 13, 10
+             db "  Press 1 to launch kernel   ", 13, 10
+             db 13, 10, 0
 
-;GDT Implemetation
+msg_loading  db 13, 10, "Loading kernel...", 13, 10, 0
+msg_invalid  db "Invalid key. Press 1 to continue.", 13, 10, 0
+msg_disk_err db 13, 10, "Disk read error! System halted.", 0
+
 
 gdt_start:
     dd 0x0
     dd 0x0
 
     ; Code segment descriptor
-    dw 0xFFFF       ; Limte
-    dw 0x0000       ; Base
-    db 0x00         ; Base
-    db 10011010b    ; Access byte
-    db 11001111b    ; Flags
-    db 0x00         ; Base
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 10011010b
+    db 11001111b
+    db 0x00
 
     ; Data segment descriptor
-    dw 0xFFFF       ; Limte
-    dw 0x0000       ; Base
-    db 0x00         ; Base
-    db 10010010b    ; Access byte
-    db 11001111b    ; Flags
-    db 0x00         ; Base
+    dw 0xFFFF
+    dw 0x0000
+    db 0x00
+    db 10010010b
+    db 11001111b
+    db 0x00
 
 gdt_end:
 
 gdt_descriptor:
-    dw gdt_end - gdt_start - 1 ; Size of GDT -1
-    dd gdt_start 
+    dw gdt_end - gdt_start - 1
+    dd gdt_start
 
 
 [BITS 32]
@@ -92,8 +149,5 @@ PModeMain:
     jmp CODE_OFFSET:KERNEL_START_ADDR
 
 
-
-
-times 510 - ($ - $$) db 0   ; Fill the rest of the boot sector with zeros up to 510 bytes
-
-dw 0xAA55   ; Boot sector signature, required to make the disk bootable
+times 510 - ($ - $$) db 0
+dw 0xAA55
