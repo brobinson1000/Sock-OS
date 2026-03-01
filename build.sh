@@ -1,17 +1,25 @@
 #!/bin/bash
+set -e
 
-# Assemble bootloader and kernel
+if ! command -v nasm &>/dev/null || ! command -v gcc &>/dev/null || ! command -v ld &>/dev/null || ! command -v qemu-system-i386 &>/dev/null; then
+    echo "Error: Required tool(s) are not installed (nasm, gcc, ld, qemu-system-i386)."
+    exit 1
+fi
+
+echo "Assembling bootloader..."
 nasm -f bin boot.asm -o boot.bin
-nasm -f bin kernel.asm -o kernel.bin
 
-# Pad bootloader to 512 bytes
-truncate -s 512 boot.bin
+echo "Assembling kernel entry..."
+nasm -f elf32 kernel.asm -o kernel_entry.o
 
-# Create OS image (bootloader + kernel)
-cat boot.bin kernel.bin > os-image.img
+echo "Compiling C kernel..."
+gcc -m32 -ffreestanding -fno-pic -c kmain.c -o kmain.o
 
-# Run using QEMU
-qemu-system-x86_64 -drive file=os-image.img,format=raw,if=floppy
+echo "Linking kernel..."
+ld -m elf_i386 -Ttext 0x7E00 --entry start kernel_entry.o kmain.o \
+   --oformat binary -o kernel.bin
 
-
+echo "Creating OS image..."
+dd if=boot.bin of=os-image.img bs=512 seek=0
+dd if=kernel.bin of=os-image.img bs=512 seek=1
 

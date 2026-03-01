@@ -1,0 +1,5 @@
+echo "Running in QEMU..."
+qemu-system-i386 -drive file=os-image.img,format=raw \
+                  -m 512M \
+                  -serial stdio \
+                  -s -S  # Debugging (optional)
