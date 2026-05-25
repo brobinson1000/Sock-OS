@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/run/current-system/sw/bin/bash
 echo "Cleaning old binaries.."
 
 rm -f boot.bin
