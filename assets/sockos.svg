@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" width="620" height="200" role="img" aria-label="SockOS — 32-bit x86 operating system">
+  <title>SockOS</title>
+
+  <defs>
+    <clipPath id="cuffClip">
+      <rect x="72" y="38" width="60" height="26" rx="8"/>
+    </clipPath>
+    <linearGradient id="sockBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- panel -->
+  <rect x="4" y="4" width="612" height="192" rx="18" fill="#0D1117" stroke="#21262D" stroke-width="2"/>
+
+  <!-- sock -->
+  <g>
+    <path d="M78,48 L126,48 L126,104 L174,104 Q186,104 186,128 Q186,152 174,152 L90,152 Q78,152 78,140 Z"
+          fill="url(#sockBody)"/>
+    <!-- heel shading -->
+    <path d="M78,110 L126,110 L126,152 L90,152 Q78,152 78,140 Z" fill="#D97706" opacity="0.35"/>
+    <!-- cuff -->
+    <rect x="72" y="38" width="60" height="26" rx="8" fill="#FDE68A"/>
+    <g clip-path="url(#cuffClip)">
+      <rect x="72" y="44" width="60" height="4" fill="#B45309" opacity="0.45"/>
+      <rect x="72" y="54" width="60" height="4" fill="#B45309" opacity="0.45"/>
+    </g>
+  </g>
+
+  <!-- blinking-cursor block, terminal nod -->
+  <rect x="196" y="128" width="14" height="26" fill="#F59E0B" opacity="0.55"/>
+
+  <!-- wordmark -->
+  <text x="232" y="112"
+        font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
+        font-size="64" font-weight="700" letter-spacing="-1">
+    <tspan fill="#F0F6FC">Sock</tspan><tspan fill="#F59E0B">OS</tspan>
+  </text>
+
+  <text x="235" y="145"
+        font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
+        font-size="16" font-weight="500" letter-spacing="4.2" fill="#8B949E">
+    32-BIT x86 · BARE METAL
+  </text>
+</svg>
