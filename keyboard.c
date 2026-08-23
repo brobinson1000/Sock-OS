@@ -63,8 +63,19 @@ void keyboard_callback(registers_t* regs) {
             c = shift_pressed ?  scancode_shift_to_ascii[scancode] : scancode_to_ascii[scancode];
         }
         if (c) {
-            char str[2] = {c, '\0'};
-            kprint(str);
+            if ( c == '\b' ) {
+                kdelete();
+                return;
+            } else if ( c == '\n' ) {
+                kprint_newline();
+                return;
+            } else if ( c == '\t' ) {
+                ktab();
+                return;
+            } else {
+                char str[2] = {c, '\0'};
+                kprint(str);
+            }
         }
     } 
 }
