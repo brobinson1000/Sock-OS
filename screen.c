@@ -81,7 +81,6 @@ void kprint_newline() {
 }
 
 void ktab(void) {
-    cursor_y = 0;
     cursor_x += 8;
 }
 
